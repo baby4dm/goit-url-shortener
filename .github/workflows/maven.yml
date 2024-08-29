@@ -1,13 +1,15 @@
 name: Java CI
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
     branches:
       - main
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     services:
@@ -16,34 +18,39 @@ jobs:
         ports:
           - 5432:5432
         env:
-          POSTGRES_DB: spring_homework
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        options: --health-cmd "pg_isready -U your_username" --health-interval 10s --health-timeout 5s --health-retries 5
+          POSTGRES_DB: goit_url_db
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: root
+        options: --health-cmd "pg_isready -U root" --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
           distribution: 'adopt'
           java-version: '21'
 
       - name: Wait for PostgreSQL to start
         run: |
-          until pg_isready -h localhost -p 5432 -U your_username; do
+          until pg_isready -h localhost -p 5432 -U root; do
             echo "Waiting for PostgreSQL..."
             sleep 5
           done
 
       - name: Create database
         run: |
-          psql -h localhost -U your_username -c "CREATE DATABASE spring_homework;" || echo "Database already exists."
+          psql -h localhost -U root -c "CREATE DATABASE goit_url_db;" || echo "Database already exists."
 
       - name: Build with Maven
         run: mvn -B package --file pom.xml
 
       - name: Run tests
+        env:
+          DB_URL: jdbc:postgresql://localhost:5432/goit_url_db
+          DB_USERNAME: root
+          DB_PASSWORD: root
+          PORT: 8080
         run: mvn test -X -Duser.language=en -Duser.country=US
