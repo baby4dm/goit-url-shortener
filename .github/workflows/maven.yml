@@ -1,29 +1,23 @@
-name: Java CI
+name: Maven Build
 
 on:
   push:
     branches:
-      - main
       - develop
+      - main
   pull_request:
     branches:
-      - main
       - develop
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:15
-        ports:
-          - 5432:5432
-        env:
-          POSTGRES_DB: goit_url_db
-          POSTGRES_USER: root
-          POSTGRES_PASSWORD: root
-        options: --health-cmd "pg_isready -U root" --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      DB_PASSWORD: root
+      DB_URL: jdbc:postgresql://localhost:5432/goit_url_db
+      DB_USERNAME: root
+      PORT: 8080
 
     steps:
       - name: Checkout code
@@ -32,27 +26,26 @@ jobs:
       - name: Set up JDK 21
         uses: actions/setup-java@v3
         with:
-          distribution: 'adopt'
           java-version: '21'
+          distribution: 'zulu'
 
-      - name: Wait for PostgreSQL to start
-        run: |
-          until pg_isready -h localhost -p 5432 -U root; do
-            echo "Waiting for PostgreSQL..."
-            sleep 5
-          done
-
-      - name: Create database
-        run: |
-          psql -h localhost -U root -c "CREATE DATABASE goit_url_db;" || echo "Database already exists."
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
 
       - name: Build with Maven
-        run: mvn -B package --file pom.xml
+        run: mvn clean install --file pom.xml
 
       - name: Run tests
-        env:
-          DB_URL: jdbc:postgresql://localhost:5432/goit_url_db
-          DB_USERNAME: root
-          DB_PASSWORD: root
-          PORT: 8080
-        run: mvn test -X -Duser.language=en -Duser.country=US
+        run: mvn test --file pom.xml
+
+      - name: Publish Test Results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: target/surefire-reports
