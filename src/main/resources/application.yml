@@ -7,9 +7,9 @@ spring:
   application:
     name: url-shortener
   datasource:
-    url:
-    username:
-    password:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -18,9 +18,9 @@ spring:
     show-sql: true
   flyway:
     enabled: true
-    url:
-    user:
-    password:
+    url: ${DB_URL}
+    user: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     schemas: public
     locations: classpath:db/migration
     baseline-on-migrate: true
