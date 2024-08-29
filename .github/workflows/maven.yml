@@ -14,10 +14,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_URL: ${DB_URL}
-      DB_USERNAME: ${DB_USERNAME}
-      PORT: ${PORT}
+      DB_PASSWORD: root
+      DB_URL: jdbc:postgresql://localhost:5432/goit_url_db
+      DB_USERNAME: root
+      PORT: 8080
 
     steps:
       - name: Checkout code
