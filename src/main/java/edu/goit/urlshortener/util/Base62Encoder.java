@@ -9,6 +9,7 @@ public class Base62Encoder {
     private static final String ALPHABET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final int BASE = ALPHABET.length();
     private static final int SHORT_URL_LENGTH = 7;
+    private final Random r = new Random();
 
     public String encode(long id) {
         StringBuilder shortURL = new StringBuilder();
@@ -17,7 +18,7 @@ public class Base62Encoder {
             id /= BASE;
         }
         while (shortURL.length() < SHORT_URL_LENGTH) {
-            shortURL.append(ALPHABET.charAt(new Random().nextInt(BASE)));
+            shortURL.append(ALPHABET.charAt(r.nextInt(BASE)));
         }
         return shortURL.reverse().toString();
     }
