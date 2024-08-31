@@ -1,40 +1,52 @@
 package edu.goit.urlshortener.model;
 
 import edu.goit.urlshortener.security.model.User;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
-@Getter
-@Setter
-@Builder
+@Builder @Getter @Setter
 @ToString
-@RequiredArgsConstructor
+@NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "url")
+@Table(name = "urls")
 public class Url {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "urls_seq")
+    @SequenceGenerator(name = "urls_seq", sequenceName = "seq_url_id", allocationSize = 1)
     private Long id;
-    private String nativeLink;
-    private String shortLink;
-    private long transactionsCount;
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+
+    @Column(name = "short_link")
+    private String slug;
+
+    @Column(name = "transactions_count", nullable = false)
+    private Long clickCount;
+
+    @Column(name = "native_link", nullable = false, columnDefinition = "TEXT")
+    private String destination;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(name = "url_fk"))
     private User user;
-    private LocalDateTime createdAt = LocalDateTime.now();
-    private LocalDateTime expiredTime = LocalDateTime.now().plusMonths(1);
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "expired_time")
+    private LocalDateTime expiredTime;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Url url)) return false;
+        return id != null && id.equals(url.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
+    }
 }
