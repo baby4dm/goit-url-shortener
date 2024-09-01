@@ -20,7 +20,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public String createUser(SignupRequest request) {
+    public User createUser(SignupRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new RuntimeException("User with username %s already exists".formatted(request.getUsername())); //TODO add exception
         }
@@ -29,7 +29,7 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         userRepository.save(user);
 
-        return "User created";
+        return user;
     }
 
     public User findByUsername(String username) {

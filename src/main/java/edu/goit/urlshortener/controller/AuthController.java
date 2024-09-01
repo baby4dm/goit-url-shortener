@@ -2,6 +2,7 @@ package edu.goit.urlshortener.controller;
 
 
 import edu.goit.urlshortener.model.request.SignupRequest;
+import edu.goit.urlshortener.model.response.UserResponse;
 import edu.goit.urlshortener.service.impl.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +21,12 @@ public class AuthController {
 
     @PostMapping("/signup")
     @ResponseStatus(HttpStatus.CREATED)
-    public String signup(@RequestBody SignupRequest signupRequest) {
-        return userService.createUser(signupRequest);
+    public UserResponse signup(@RequestBody SignupRequest signupRequest) {
+        userService.createUser(signupRequest);
+        UserResponse userResponse = new UserResponse();
+        userResponse.setUsername(signupRequest.getUsername());
+        userResponse.setPassword(signupRequest.getPassword());
+        return userResponse;
     }
 
 
