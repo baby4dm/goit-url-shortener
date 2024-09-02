@@ -1,5 +1,5 @@
 server:
-  port: ${PORT}
+  port: 8080
   host:
     url: http://localhost:8080
 
@@ -7,9 +7,9 @@ spring:
   application:
     name: url-shortener
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url:
+    username:
+    password:
     driver-class-name: org.postgresql.Driver
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -18,9 +18,9 @@ spring:
     show-sql: true
   flyway:
     enabled: true
-    url: ${DB_URL}
-    user: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url:
+    user:
+    password:
     schemas: public
     locations: classpath:db/migration
     baseline-on-migrate: true

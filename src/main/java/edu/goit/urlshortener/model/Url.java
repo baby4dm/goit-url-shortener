@@ -8,25 +8,25 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
-@Builder @Getter @Setter
-@ToString
+@Setter @Getter
+@ToString @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "urls")
+@Table(name = "links")
 public class Url {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "urls_seq")
-    @SequenceGenerator(name = "urls_seq", sequenceName = "seq_url_id", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "link_seq")
+    @SequenceGenerator(name = "link_seq", sequenceName = "seq_link_id", allocationSize = 1)
     private Long id;
 
     @Column(name = "short_link")
-    private String slug;
+    private String shortLink;
 
-    @Column(name = "transactions_count", nullable = false)
+    @Column(name = "click_count", nullable = false)
     private Long clickCount;
 
     @Column(name = "native_link", nullable = false, columnDefinition = "TEXT")
-    private String destination;
+    private String nativeLink;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(name = "url_fk"))
