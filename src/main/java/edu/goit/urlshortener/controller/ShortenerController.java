@@ -24,15 +24,15 @@ public class ShortenerController {
         return ResponseEntity.ok(shortLink);
     }
 
-    @GetMapping("/{slug}")
-    public ResponseEntity<String> redirect(@PathVariable String slug) {
-        String destinationLink = urlService.getDestinationLink(slug);
+    @GetMapping("/{url}")
+    public ResponseEntity<String> redirect(@PathVariable String url) {
+        String destinationLink = urlService.getDestinationLink(url);
         return ResponseEntity.status(302).header("Location", destinationLink).build();
     }
 
-    @GetMapping("/info/{slug}")
-    public ResponseEntity<ShortLinkResponse> getShortLinkInfo(@PathVariable String slug) {
-        ShortLinkResponse response = urlService.getShortLinkDto(slug);
+    @GetMapping("/info/{url}")
+    public ResponseEntity<ShortLinkResponse> getShortLinkInfo(@PathVariable String url) {
+        ShortLinkResponse response = urlService.getShortLinkDto(url);
         return ResponseEntity.ok(response);
     }
 
@@ -42,9 +42,9 @@ public class ShortenerController {
         return ResponseEntity.ok(activeUrls);
     }
 
-    @DeleteMapping("/{slug}")
-    public ResponseEntity<Void> deleteShortLink(@PathVariable String slug) {
-        urlService.deleteShortLink(slug);
+    @DeleteMapping("/{url}")
+    public ResponseEntity<Void> deleteShortLink(@PathVariable String url) {
+        urlService.deleteShortLink(url);
         return ResponseEntity.noContent().build();
     }
 }
