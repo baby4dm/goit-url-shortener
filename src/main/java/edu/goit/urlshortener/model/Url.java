@@ -1,9 +1,13 @@
 package edu.goit.urlshortener.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import edu.goit.urlshortener.security.model.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -13,7 +17,10 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "links")
-public class Url {
+@BatchSize(size = 10)
+public class Url implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 6527855645691638321L;
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "link_seq")
     @SequenceGenerator(name = "link_seq", sequenceName = "seq_link_id", allocationSize = 1)
@@ -30,6 +37,7 @@ public class Url {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(name = "url_fk"))
+    @JsonIgnore
     private User user;
 
     @Column(name = "created_at")
