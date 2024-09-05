@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
@@ -18,6 +19,7 @@ public class RedisToDbSyncService {
     private final UrlRepository urlRepository;
 
     @Scheduled(fixedRate = 3600000)
+    @Transactional
     public void synchronize() {
         Set<String> cacheKeys = redisTemplate.keys("urlCache::*");
 
