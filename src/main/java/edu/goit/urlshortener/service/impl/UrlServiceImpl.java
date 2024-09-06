@@ -59,14 +59,14 @@ public class UrlServiceImpl implements UrlService {
             redisTemplate.opsForValue().set(cacheKey, url);
         }
 
-        if (url.getExpiredTime().isBefore(LocalDateTime.now())) {
+        if (url.getExpiredTime().isAfter(LocalDateTime.now())) {
             Long newClickCount = redisTemplate.opsForValue().increment(cacheKey + "::clickCount", 1);
             url.setClickCount(newClickCount);
             redisTemplate.opsForValue().set(cacheKey, url);
-            return "Your link has expired:" + url.getShortLink();
+            return url.getNativeLink();
         }
 
-        return url.getNativeLink();
+        return "Your link has expired:" + url.getShortLink();
     }
 
     @Cacheable(value = "shortLinkResponses", key = "#shortLink", unless = "#result == null")
