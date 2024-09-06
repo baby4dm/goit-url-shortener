@@ -3,10 +3,8 @@ package edu.goit.urlshortener.repo;
 import edu.goit.urlshortener.model.Url;
 import edu.goit.urlshortener.security.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,5 +19,7 @@ public interface UrlRepository extends JpaRepository<Url, Long> {
     Optional<List<String>> findAllShortLinkByUserId(@Param("user") User user);
 
     @Query("SELECT u FROM Url u WHERE u.shortLink IN :shortLinks")
-    List<Url> findByShortLinkIn(@Param("shortLinks") List<String> shortLinks);
+    List<Url>findByShortLinkIn(@Param("shortLinks") List<String> shortLinks);
+
+    Optional<Url> findUrlByShortLinkAndUser(String slug, User user);
 }

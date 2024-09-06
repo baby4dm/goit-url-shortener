@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -32,9 +33,7 @@ public class UrlServiceImpl implements UrlService {
 
     @Transactional
     public String createShortLink(String longUrl) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        User authUser = userRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("User not found with username " + username));
+        User authUser = getUser();
 
         Url url = Url.builder()
                 .nativeLink(longUrl)
@@ -81,30 +80,47 @@ public class UrlServiceImpl implements UrlService {
     }
 
     public Page<String> findAllActiveUrls(Pageable pageable) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        User authUser = userRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("User not found with username " + username));
+        User authUser = getUser();
 
         List<String> slugsList = urlRepository.findAllActiveSlugsByUserId(authUser)
                 .orElseThrow(EntityNotFoundException::new);
         return new PageImpl<>(slugsList, pageable, slugsList.size());
     }
 
+
+
     @CacheEvict(value = "urlCache", key = "#shortLink")
-    public void deleteShortLink(String slug) {
-        Url url = urlRepository.findByShortLink(slug)
+    @Transactional
+    public void deleteShortLink(String shortLink) {
+        Url url = urlRepository.findByShortLink(shortLink)
                 .orElseThrow(() -> new EntityNotFoundException("Short link not found"));
         urlRepository.delete(url);
     }
 
     public Page<String> findAllLinks(int offset, int size) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        User authUser = userRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("User not found with username " + username));
+        User authUser = getUser();
 
         Pageable pageable = PageRequest.of(offset, size);
         List<String> list = urlRepository.findAllShortLinkByUserId(authUser)
                 .orElseThrow(EntityNotFoundException::new);
         return new PageImpl<>(list, pageable, list.size());
+    }
+
+    @Transactional
+    public void extendExpirationDate(String shortLink) {
+        User authUser = getUser();
+
+        Url url = urlRepository.findUrlByShortLinkAndUser(shortLink, authUser)
+                .orElseThrow(EntityNotFoundException::new);
+        url.setExpiredTime(LocalDateTime.now().plusDays(30));
+
+        String cacheKey = "urlCache::" + shortLink;
+        redisTemplate.opsForValue().set(cacheKey, url);
+    }
+
+    private User getUser() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with username " + username));
     }
 }
