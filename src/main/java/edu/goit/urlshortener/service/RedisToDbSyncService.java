@@ -2,7 +2,6 @@ package edu.goit.urlshortener.service;
 
 import edu.goit.urlshortener.model.Url;
 import edu.goit.urlshortener.repo.UrlRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -10,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 @Service
@@ -33,7 +31,7 @@ public class RedisToDbSyncService {
                     .map(key -> key.replace("urlCache::", ""))
                     .toList();
 
-            List<Url> urlsToUpdate = urlRepository.findByShortLinkIn(shortLinks)
+            List<Url> urlsToUpdate = urlRepository.findByShortLinkIn(shortLinks);
 
             for (Url dbUrl : urlsToUpdate) {
                 String cacheKey = "urlCache::" + dbUrl.getShortLink();

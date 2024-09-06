@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -60,9 +59,12 @@ public class UrlServiceImpl implements UrlService {
             redisTemplate.opsForValue().set(cacheKey, url);
         }
 
-        Long newClickCount = redisTemplate.opsForValue().increment(cacheKey + "::clickCount", 1);
-        url.setClickCount(newClickCount);
-        redisTemplate.opsForValue().set(cacheKey, url);
+        if (url.getExpiredTime().isBefore(LocalDateTime.now())) {
+            Long newClickCount = redisTemplate.opsForValue().increment(cacheKey + "::clickCount", 1);
+            url.setClickCount(newClickCount);
+            redisTemplate.opsForValue().set(cacheKey, url);
+            return "Your link has expired:" + url.getShortLink();
+        }
 
         return url.getNativeLink();
     }
