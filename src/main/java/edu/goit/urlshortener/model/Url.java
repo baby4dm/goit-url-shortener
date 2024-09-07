@@ -1,40 +1,60 @@
 package edu.goit.urlshortener.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import edu.goit.urlshortener.security.model.User;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
-@Getter
-@Setter
-@Builder
-@ToString
-@RequiredArgsConstructor
+@Setter @Getter
+@ToString @Builder
+@NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "url")
-public class Url {
+@Table(name = "links")
+@BatchSize(size = 10)
+public class Url implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 6527855645691638321L;
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "link_seq")
+    @SequenceGenerator(name = "link_seq", sequenceName = "seq_link_id", allocationSize = 1)
     private Long id;
-    private String nativeLink;
+
+    @Column(name = "short_link")
     private String shortLink;
-    private long transactionsCount;
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+
+    @Column(name = "click_count", nullable = false)
+    private Long clickCount;
+
+    @Column(name = "native_link", nullable = false, columnDefinition = "TEXT")
+    private String nativeLink;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(name = "url_fk"))
+    @JsonIgnore
     private User user;
-    private LocalDateTime createdAt = LocalDateTime.now();
-    private LocalDateTime expiredTime = LocalDateTime.now().plusMonths(1);
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "expired_time")
+    private LocalDateTime expiredTime;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Url url)) return false;
+        return id != null && id.equals(url.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
+    }
 }
