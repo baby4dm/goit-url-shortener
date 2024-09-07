@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS users
 CREATE TABLE IF NOT EXISTS links
 (
     id                 BIGINT DEFAULT nextval('seq_link_id'),
-    native_link        TEXT NOT NULL,
+    native_link        TEXT UNIQUE NOT NULL,
     short_link         VARCHAR(255) NOT NULL,
     click_count        BIGINT,
     user_id            BIGINT,

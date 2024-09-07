@@ -1,12 +1,16 @@
 package edu.goit.urlshortener.model.dto;
 
+
+
 import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Getter @Setter
+@Getter
+@Setter
 @AllArgsConstructor
-@ToString @Builder
+@ToString
+@Builder
 public class ShortLinkResponse {
     private String slug;
     private Long clickCount;
