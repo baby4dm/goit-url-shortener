@@ -1,9 +1,9 @@
-package edu.goit.urlshortener.model.request;
+package edu.goit.urlshortener.model.responses;
 
 import lombok.Data;
 
 @Data
-public class AuthRequest {
+public class UserResponse {
     private String username;
     private String password;
 }

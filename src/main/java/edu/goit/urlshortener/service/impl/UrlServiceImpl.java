@@ -1,7 +1,7 @@
 package edu.goit.urlshortener.service.impl;
 
 import edu.goit.urlshortener.model.Url;
-import edu.goit.urlshortener.model.dto.ShortLinkResponse;
+import edu.goit.urlshortener.model.responses.ShortLinkResponse;
 import edu.goit.urlshortener.repo.UrlRepository;
 import edu.goit.urlshortener.repo.UserRepository;
 import edu.goit.urlshortener.security.model.User;

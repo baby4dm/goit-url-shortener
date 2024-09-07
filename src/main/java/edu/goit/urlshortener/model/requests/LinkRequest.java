@@ -1,4 +1,4 @@
-package edu.goit.urlshortener.model.dto;
+package edu.goit.urlshortener.model.requests;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

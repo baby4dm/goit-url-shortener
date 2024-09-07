@@ -41,6 +41,8 @@ spring:
     type: redis
 
 springdoc:
+  host:
+    url: http://localhost:8080
   writer-with-default-pretty-printer: true
   show-login-endpoint: true
   pre-loading-enabled: true
@@ -55,5 +57,7 @@ springdoc:
       activated: true
       theme: obsidian
     groups-order: asc
-  host:
-    url: http://localhost:8080
+
+security:
+  jwt:
+    expiration-time: 86400000

@@ -1,4 +1,4 @@
-package edu.goit.urlshortener.model.dto;
+package edu.goit.urlshortener.model.responses;
 
 
 
