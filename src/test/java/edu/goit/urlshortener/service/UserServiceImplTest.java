@@ -1,4 +1,4 @@
-package edu.goit.urlshortener;
+package edu.goit.urlshortener.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -14,21 +14,26 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
-@SpringBootTest
-@ExtendWith(MockitoExtension.class)
-@ActiveProfiles("test") // optional, if you have a specific test profile
+@Testcontainers
 public class UserServiceImplTest {
     @Mock
     private UserRepository userRepository;
 
     @Mock
-    private PasswordEncoder passwordEncoder;
+   private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private UserServiceImpl userService;
@@ -37,26 +42,36 @@ public class UserServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        MockitoAnnotations.openMocks(this);
         signupRequest = new SignupRequest();
         signupRequest.setUsername("testUser");
         signupRequest.setPassword("testPassword");
+
     }
 
+    @Container
+    @ServiceConnection
+    static PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>(DockerImageName.parse("postgres:latest"));
+
     @Test
-    @Transactional
     void testCreateUserSuccess() {
         // Arrange
-        when(userRepository.existsByUsername(signupRequest.getUsername())).thenReturn(false);
-        when(passwordEncoder.encode(signupRequest.getPassword())).thenReturn("encodedPassword");
+        when(userRepository.existsByUsername(any())).thenReturn(true);
+        when(passwordEncoder.encode(any())).thenReturn("encodedPassword");
 
         // Act
+        User mockUser = new User();
+        mockUser.setUsername("testUser");
+        mockUser.setPassword("encodedPassword");
+
         User user = userService.createUser(signupRequest);
 
         // Assert
         assertNotNull(user);
         assertEquals(signupRequest.getUsername(), user.getUsername());
         assertEquals("encodedPassword", user.getPassword());
-        verify(userRepository, times(1)).save(any(User.class));
+        verify(userRepository).findByUsername("testUser");
+        verify(userRepository).save(mockUser);
     }
 
     @Test
