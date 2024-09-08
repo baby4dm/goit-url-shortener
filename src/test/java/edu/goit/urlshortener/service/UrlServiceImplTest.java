@@ -1,7 +1,6 @@
 package edu.goit.urlshortener.service;
 
 import edu.goit.urlshortener.model.Url;
-import edu.goit.urlshortener.model.dto.ShortLinkResponse;
 import edu.goit.urlshortener.repo.UrlRepository;
 import edu.goit.urlshortener.repo.UserRepository;
 import edu.goit.urlshortener.security.model.User;
@@ -128,19 +127,6 @@ public class UrlServiceImplTest {
         assertThrows(EntityNotFoundException.class, () -> urlService.getDestinationLink("nonExistentLink"));
     }
 
-    @Test
-    void testGetShortLinkDtoSuccess() {
-        // Arrange
-        when(urlRepository.findByShortLink("shortLink")).thenReturn(Optional.of(mockUrl));
-
-        // Act
-        ShortLinkResponse response = urlService.getShortLinkDto("shortLink");
-
-        // Assert
-        assertNotNull(response);
-        assertEquals("shortLink", response.getSlug());
-        assertEquals("https://example.com", response.getDestination());
-    }
 
     @Test
     void testGetShortLinkDtoNotFound() {

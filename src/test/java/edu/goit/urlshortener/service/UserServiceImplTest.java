@@ -1,9 +1,9 @@
 package edu.goit.urlshortener.service;
 
-import edu.goit.urlshortener.model.request.SignupRequest;
 import edu.goit.urlshortener.repo.UserRepository;
+import edu.goit.urlshortener.security.model.AuthRequest;
 import edu.goit.urlshortener.security.model.User;
-import edu.goit.urlshortener.service.impl.UserServiceImpl;
+import edu.goit.urlshortener.security.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -33,14 +33,12 @@ public class UserServiceImplTest {
     @InjectMocks
     private UserServiceImpl userService;
 
-    private SignupRequest signupRequest;
+    private AuthRequest signupRequest;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        signupRequest = new SignupRequest();
-        signupRequest.setUsername("testUser");
-        signupRequest.setPassword("testPassword");
+        signupRequest = new AuthRequest("testUser", "testPassword");
 
     }
 
@@ -59,13 +57,12 @@ public class UserServiceImplTest {
         mockUser.setUsername("testUser");
         mockUser.setPassword("encodedPassword");
 
-        User user = userService.createUser(signupRequest);
+        String userName = userService.registerUser(signupRequest);
 
         // Assert
-        assertNotNull(user);
-        assertEquals(signupRequest.getUsername(), user.getUsername());
-        assertEquals("encodedPassword", user.getPassword());
-        verify(userRepository).findByUsername("testUser");
+        assertNotNull(userName);
+        assertEquals(userName, userRepository.findByUsername(userName).get().getUsername());
+        verify(userRepository).findByUsername(userName);
         verify(userRepository).save(mockUser);
     }
 
@@ -73,10 +70,10 @@ public class UserServiceImplTest {
     @Transactional
     void testCreateUserAlreadyExists() {
         // Arrange
-        when(userRepository.existsByUsername(signupRequest.getUsername())).thenReturn(true);
+        when(userRepository.existsByUsername(userService.registerUser(signupRequest))).thenReturn(true);
 
         // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> userService.createUser(signupRequest));
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> userService.registerUser(signupRequest));
         assertEquals("User with username testUser already exists", exception.getMessage());
         verify(userRepository, never()).save(any(User.class));
     }

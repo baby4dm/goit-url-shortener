@@ -1,6 +1,6 @@
 package edu.goit.urlshortener.request;
 
-import edu.goit.urlshortener.model.request.SignupRequest;
+import edu.goit.urlshortener.security.model.AuthRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -15,29 +15,26 @@ import static org.junit.jupiter.api.Assertions.*;
 class SignupRequestTest {
 
     private Validator validator;
-    private SignupRequest signupRequest;
+    private AuthRequest signupRequest;
 
     @BeforeEach
     void setUp() {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
-        signupRequest = new SignupRequest();
+        signupRequest = new AuthRequest("username", "password");
     }
 
     @Test
     void testValidSignupRequest() {
-        signupRequest.setUsername("testUser");
-        signupRequest.setPassword("testPassword");
 
-        Set<ConstraintViolation<SignupRequest>> violations = validator.validate(signupRequest);
+        Set<ConstraintViolation<AuthRequest>> violations = validator.validate(signupRequest);
         assertTrue(violations.isEmpty());
     }
 
     @Test
     void testInvalidSignupRequest_MissingUsername() {
-        signupRequest.setPassword("testPassword");
 
-        Set<ConstraintViolation<SignupRequest>> violations = validator.validate(signupRequest);
+        Set<ConstraintViolation<AuthRequest>> violations = validator.validate(signupRequest);
         assertFalse(violations.isEmpty());
         assertEquals(1, violations.size());  // Only one violation (missing username)
     }

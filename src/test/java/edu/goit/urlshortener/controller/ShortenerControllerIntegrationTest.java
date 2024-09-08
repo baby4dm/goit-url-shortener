@@ -1,8 +1,9 @@
 package edu.goit.urlshortener.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.goit.urlshortener.model.dto.LinkRequest;
-import edu.goit.urlshortener.model.dto.ShortLinkResponse;
+
+import edu.goit.urlshortener.model.requests.LinkRequest;
+import edu.goit.urlshortener.model.responses.ShortLinkResponse;
 import edu.goit.urlshortener.service.impl.UrlServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

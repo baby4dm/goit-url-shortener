@@ -1,9 +1,8 @@
 package edu.goit.urlshortener.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.goit.urlshortener.model.request.SignupRequest;
-import edu.goit.urlshortener.model.response.UserResponse;
-import edu.goit.urlshortener.service.impl.UserServiceImpl;
+import edu.goit.urlshortener.security.model.AuthRequest;
+import edu.goit.urlshortener.security.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
@@ -39,7 +38,7 @@ public class AuthControllerIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private SignupRequest signupRequest;
+    private AuthRequest signupRequest;
 
     @Container
     @ServiceConnection
@@ -48,9 +47,7 @@ public class AuthControllerIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        signupRequest = new SignupRequest();
-        signupRequest.setUsername("testUser");
-        signupRequest.setPassword("testPassword");
+        signupRequest = new AuthRequest("testUser", "testPassword");
         MockitoAnnotations.openMocks(this);
     }
 
@@ -58,12 +55,7 @@ public class AuthControllerIntegrationTest {
     void testSignupSuccess() throws Exception {
         // Arrange
         // Mocking the behavior of the userService to do nothing when createUser is called
-        when(userService.createUser(any(SignupRequest.class))).thenReturn(null);
-
-        // Expected UserResponse after successful signup
-        UserResponse expectedResponse = new UserResponse();
-        expectedResponse.setUsername("testUser");
-        expectedResponse.setPassword("testPassword");
+        when(userService.registerUser(any(AuthRequest.class))).thenReturn(null);
 
         // Act & Assert
         mockMvc.perform(post("/signup")
@@ -74,22 +66,21 @@ public class AuthControllerIntegrationTest {
                 .andExpect(jsonPath("$.password").value("testPassword"));
 
         // Verify that the createUser method was called exactly once
-        verify(userService, times(1)).createUser(any(SignupRequest.class));
+        verify(userService, times(1)).registerUser(any(AuthRequest.class));
     }
 
     @Test
     void testSignupValidationFailure() throws Exception {
         // Arrange
-        SignupRequest invalidRequest = new SignupRequest();  // Request with only the name (validation should fail)
-        invalidRequest.setUsername("testUser");
+        // Request with only the name (validation should fail)
 
         // Act & Assert
         mockMvc.perform(post("/signup")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                        .content(objectMapper.writeValueAsString("testUser")))
                 .andExpect(status().isBadRequest());
 
         // Verify that createUser method was not called since validation failed
-        verify(userService, times(0)).createUser(any(SignupRequest.class));
+        verify(userService, times(0)).registerUser(any(AuthRequest.class));
     }
 }
