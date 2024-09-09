@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/v1/urls")
+@RequestMapping("/v1/urls")
 @RequiredArgsConstructor
 public class ShortenerController {
 
