@@ -7,6 +7,7 @@ import edu.goit.urlshortener.model.responses.ShortLinkResponse;
 import edu.goit.urlshortener.service.impl.UrlServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -57,7 +58,6 @@ class ShortenerControllerIntegrationTest {
     @BeforeEach
     void setUp() {
         linkRequest = new LinkRequest("https://example.com");
-        //linkRequest.setLongUrl("https://example.com");
 
         shortLinkResponse = ShortLinkResponse.builder()
                 .clickCount(5L)

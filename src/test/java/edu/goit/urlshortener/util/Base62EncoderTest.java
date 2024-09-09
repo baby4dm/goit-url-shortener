@@ -11,10 +11,6 @@ import static org.junit.jupiter.api.Assertions.*;
 public class Base62EncoderTest {
     private static final int SHORT_URL_LENGTH = 7;
 
-    @Container
-    @ServiceConnection
-    static PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>(DockerImageName.parse("postgres:latest"));
-
     @Test
     void testEncodeShortLength() {
         assertNotNull(Base62Encoder.encode(1L));

@@ -22,7 +22,6 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@Testcontainers
 public class UserServiceImplTest {
     @Mock
     private UserRepository userRepository;
@@ -42,9 +41,6 @@ public class UserServiceImplTest {
 
     }
 
-    @Container
-    @ServiceConnection
-    static PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>(DockerImageName.parse("postgres:latest"));
 
     @Test
     void testCreateUserSuccess() {
