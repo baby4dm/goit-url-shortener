@@ -58,7 +58,7 @@ public class ShortenerController {
     @PutMapping("/extend/{url}")
     public ResponseEntity<Void> extendExpirationDate(@PathVariable String url) {
         urlService.extendExpirationDate(url);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @DeleteMapping("/{url}")
