@@ -8,9 +8,11 @@ import edu.goit.urlshortener.service.impl.UrlServiceImpl;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,7 +33,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@Testcontainers
+//@Testcontainers
+@ExtendWith(MockitoExtension.class)
 public class UrlServiceImplTest {
 
     @Mock
@@ -52,9 +55,9 @@ public class UrlServiceImplTest {
     private User mockUser;
     private Url mockUrl;
 
-    @Container
-    @ServiceConnection
-    static PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>(DockerImageName.parse("postgres:latest"));
+    //@Container
+    //@ServiceConnection
+    //static PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>(DockerImageName.parse("postgres:latest"));
 
     @BeforeEach
     void setUp() {

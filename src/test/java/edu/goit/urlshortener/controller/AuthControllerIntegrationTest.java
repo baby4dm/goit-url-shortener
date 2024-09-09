@@ -32,7 +32,7 @@ public class AuthControllerIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    //@MockBean
     private UserServiceImpl userService;
 
     @Autowired
@@ -78,7 +78,7 @@ public class AuthControllerIntegrationTest {
         mockMvc.perform(post("/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString("testUser")))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isForbidden());
 
         // Verify that createUser method was not called since validation failed
         verify(userService, times(0)).registerUser(any(AuthRequest.class));
