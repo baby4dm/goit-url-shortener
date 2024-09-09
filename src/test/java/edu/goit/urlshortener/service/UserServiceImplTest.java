@@ -40,33 +40,41 @@ public class UserServiceImplTest {
     @Test
     void testCreateUserSuccess() {
         // Arrange
-        when(userRepository.existsByUsername(any())).thenReturn(true);
-        when(passwordEncoder.encode(any())).thenReturn("encodedPassword");
+        AuthRequest authRequest = new AuthRequest("newUser", "password123");
+
+        // Mocking repository and encoder behavior
+        when(userRepository.existsByUsername("newUser")).thenReturn(false);  // Simulate that the user doesn't exist
+        when(passwordEncoder.encode("password123")).thenReturn("hashedPassword");  // Simulate password encoding
 
         // Act
-        User mockUser = new User();
-        mockUser.setUsername("testUser");
-        mockUser.setPassword("encodedPassword");
-
-        String userName = userService.registerUser(signupRequest);
+        String result = userService.registerUser(authRequest);
 
         // Assert
-        assertNotNull(userName);
-        assertEquals(userName, userRepository.findByUsername(userName).get().getUsername());
-        verify(userRepository).findByUsername(userName);
-        verify(userRepository).save(mockUser);
+        assertEquals("newUser", result);  // Assert that the username is returned
+
+        // Verify that the save method was called with a user object
+        verify(userRepository, times(1)).save(any(User.class));
+
     }
 
     @Test
     @Transactional
     void testCreateUserAlreadyExists() {
         // Arrange
-        when(userRepository.existsByUsername(userService.registerUser(signupRequest))).thenReturn(true);
+        AuthRequest authRequest = new AuthRequest("existingUser", "password123");
 
-        // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> userService.registerUser(signupRequest));
-        assertEquals("User with username testUser already exists", exception.getMessage());
-        verify(userRepository, never()).save(any(User.class));
+        // Mocking repository to simulate that the user already exists
+        when(userRepository.existsByUsername("existingUser")).thenReturn(true);
+
+        // Act and Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            userService.registerUser(authRequest);
+        });
+
+        assertEquals("User with username existingUser already exists", exception.getMessage());
+
+        // Verify that the save method was not called
+        verify(userRepository, times(0)).save(any(User.class));
     }
 
     @Test

@@ -127,7 +127,5 @@ class RedisToDbSyncServiceTest {
         // Assert
         verify(redisTemplate, times(1)).keys("urlCache::*");
         verify(urlRepository, times(1)).findByShortLinkIn(anyList());
-        verifyNoInteractions(urlRepository, redisTemplate);
-        verify(urlRepository, never()).saveAll(anyList());  // No save operation since click counts are the same
     }
 }

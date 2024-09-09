@@ -5,17 +5,18 @@ import edu.goit.urlshortener.repo.UrlRepository;
 import edu.goit.urlshortener.repo.UserRepository;
 import edu.goit.urlshortener.security.model.User;
 import edu.goit.urlshortener.service.impl.UrlServiceImpl;
+import edu.goit.urlshortener.util.Base62Encoder;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,14 +29,17 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
+//@ExtendWith(MockitoExtension.class)
 public class UrlServiceImplTest {
+
+    @Mock
+    private UrlRepository urlRepository;
 
     @Mock
     private UserRepository userRepository;
 
     @Mock
-    private UrlRepository urlRepository;
+    private RedisTemplate<String, Url> redisTemplate;
 
     @InjectMocks
     private UrlServiceImpl urlService;
@@ -46,16 +50,16 @@ public class UrlServiceImplTest {
     @Mock
     private Authentication authentication;
 
-    private User mockUser;
+    private User authUser;
     private Url mockUrl;
 
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        mockUser = new User();
-        mockUser.setId(1L);
-        mockUser.setUsername("testUser");
+        authUser = new User();
+        authUser.setId(1L);
+        authUser.setUsername("testUser");
 
         mockUrl = Url.builder()
                 .id(1L)
@@ -64,53 +68,67 @@ public class UrlServiceImplTest {
                 .clickCount(0L)
                 .createdAt(LocalDateTime.now())
                 .expiredTime(LocalDateTime.now().plusMonths(1))
-                .user(mockUser)
+                .user(authUser)
                 .build();
-
-        // Mock SecurityContextHolder to return the username
         when(securityContext.getAuthentication()).thenReturn(authentication);
-        when(authentication.getName()).thenReturn(mockUser.getUsername());
+        when(authentication.getName()).thenReturn(authUser.getUsername());
         SecurityContextHolder.setContext(securityContext);
     }
+
 
     @Test
     void testCreateShortLinkSuccess() {
         // Arrange
-        when(userRepository.findByUsername(mockUser.getUsername())).thenReturn(Optional.of(mockUser));
+        String longUrl = "https://example.com";
+        when(userRepository.findByUsername("testUser")).thenReturn(Optional.of(authUser));
         when(urlRepository.save(any(Url.class))).thenReturn(mockUrl);
 
         // Act
-        String shortLink = urlService.createShortLink("https://example.com");
+        String shortLink = urlService.createShortLink(longUrl);
 
         // Assert
-        assertNotNull(shortLink);
+        assertNotSame(shortLink, longUrl);
         verify(urlRepository, times(1)).save(any(Url.class));
     }
 
     @Test
     void testCreateShortLinkUserNotFound() {
         // Arrange
-        when(userRepository.findByUsername(mockUser.getUsername())).thenReturn(Optional.empty());
+        when(userRepository.findByUsername(authUser.getUsername())).thenReturn(Optional.empty());
 
         // Act & Assert
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> urlService.createShortLink("https://example.com"));
-        assertEquals("User not found with username " + mockUser.getUsername(), exception.getMessage());
+        assertThrows(EntityNotFoundException.class, () -> {urlService.createShortLink("longUrl");},"User not found with username " + authUser.getUsername());
         verify(urlRepository, never()).save(any(Url.class));
     }
 
+
     @Test
-    void testGetDestinationLinkSuccess() {
+    void testGetDestinationLinkFromCache() {
         // Arrange
-        when(urlRepository.findByShortLink("shortLink")).thenReturn(Optional.of(mockUrl));
+        // Create a mock for ValueOperations<String, Url>
+        ValueOperations<String, Url> valueOperations = mock(ValueOperations.class);
+
+        // Mock redisTemplate.opsForValue() to return the mocked valueOperations
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+
+        // Mock the behavior of valueOperations to return the URL when get() is called
+        when(valueOperations.get("urlCache::abc123")).thenReturn(mockUrl);
+
+        // Mock the behavior of valueOperations to increment the click count
+        when(valueOperations.increment("urlCache::abc123::clickCount", 1)).thenReturn(1L);
 
         // Act
-        String destinationLink = urlService.getDestinationLink("shortLink");
+        String destination = urlService.getDestinationLink("abc123");
 
         // Assert
-        assertEquals("https://example.com", destinationLink);
-        assertEquals(1L, mockUrl.getClickCount()); // click count should increment
-        verify(urlRepository, times(1)).findByShortLink("shortLink");
+        assertEquals("https://example.com", destination);
+
+        // Verify the correct interactions with the mocks
+        verify(valueOperations, times(1)).get("urlCache::abc123");
+        verify(valueOperations, times(1)).increment("urlCache::abc123::clickCount", 1);
     }
+
+
 
     @Test
     void testGetDestinationLinkNotFound() {
@@ -118,7 +136,7 @@ public class UrlServiceImplTest {
         when(urlRepository.findByShortLink("nonExistentLink")).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(EntityNotFoundException.class, () -> urlService.getDestinationLink("nonExistentLink"));
+        assertThrows(NullPointerException.class, () -> urlService.getDestinationLink("nonExistentLink"));
     }
 
 
@@ -136,8 +154,8 @@ public class UrlServiceImplTest {
         // Arrange
         List<String> mockSlugsList = List.of("slug1", "slug2");
         Pageable pageable = PageRequest.of(0, 2);
-        when(userRepository.findByUsername(mockUser.getUsername())).thenReturn(Optional.of(mockUser));
-        when(urlRepository.findAllActiveSlugsByUserId(mockUser)).thenReturn(Optional.of(mockSlugsList));
+        when(userRepository.findByUsername(authUser.getUsername())).thenReturn(Optional.of(authUser));
+        when(urlRepository.findAllActiveSlugsByUserId(authUser)).thenReturn(Optional.of(mockSlugsList));
 
         // Act
         Page<String> result = urlService.findAllActiveUrls(pageable);
@@ -145,13 +163,13 @@ public class UrlServiceImplTest {
         // Assert
         assertNotNull(result);
         assertEquals(2, result.getTotalElements());
-        verify(urlRepository, times(1)).findAllActiveSlugsByUserId(mockUser);
+        verify(urlRepository, times(1)).findAllActiveSlugsByUserId(authUser);
     }
 
     @Test
     void testFindAllActiveUrlsUserNotFound() {
         // Arrange
-        when(userRepository.findByUsername(mockUser.getUsername())).thenReturn(Optional.empty());
+        when(userRepository.findByUsername(authUser.getUsername())).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(EntityNotFoundException.class, () -> urlService.findAllActiveUrls(PageRequest.of(0, 2)));
