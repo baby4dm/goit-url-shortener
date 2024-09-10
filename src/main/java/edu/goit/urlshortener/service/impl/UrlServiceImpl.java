@@ -36,7 +36,7 @@ public class UrlServiceImpl implements UrlService {
 
         Url url = Url.builder()
                 .nativeLink(longUrl)
-                .shortLink("") // Temporary value
+                .shortLink("")
                 .clickCount(0L)
                 .createdAt(LocalDateTime.now())
                 .expiredTime(LocalDateTime.now().plusMonths(1))

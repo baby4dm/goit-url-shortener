@@ -2,8 +2,23 @@ package edu.goit.urlshortener.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import edu.goit.urlshortener.security.model.User;
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.BatchSize;
 
 import java.io.Serial;
@@ -12,12 +27,14 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
-@Setter @Getter
-@ToString @Builder
+@Setter
+@Getter
+@ToString
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "links")
 @BatchSize(size = 10)
+@Table(name = "links")
 public class Url implements Serializable {
     @Serial
     private static final long serialVersionUID = 6527855645691638321L;

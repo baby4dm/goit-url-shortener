@@ -10,4 +10,8 @@ public interface UrlService {
     ShortLinkResponse getShortLinkDto(String slug);
     Page<String> findAllActiveUrls(Pageable pageable);
     void deleteShortLink(String slug);
+
+    Page<String> findAllLinks(int offset, int size);
+
+    void extendExpirationDate(String url);
 }

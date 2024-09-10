@@ -11,15 +11,19 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.TestcontainersConfiguration;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -27,7 +31,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Testcontainers
 @AutoConfigureMockMvc
 @SpringBootTest
-public class AuthControllerIntegrationTest {
+@Import(TestcontainersConfiguration.class)
+class AuthControllerIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
@@ -54,34 +59,23 @@ public class AuthControllerIntegrationTest {
 
     @Test
     void testSignupSuccess() throws Exception {
-        // Arrange
-        // Mocking the behavior of the userService to do nothing when createUser is called
         when(userService.registerUser(any(AuthRequest.class))).thenReturn(null);
 
-        // Act & Assert
         mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(signupRequest)))
                 .andExpect(status().isOk());
-        // .andExpect(content().string(containsString("testUser")));
 
-
-        // Verify that the createUser method was called exactly once
         verify(userService, times(1)).registerUser(any(AuthRequest.class));
     }
 
     @Test
     void testSignupValidationFailure() throws Exception {
-        // Arrange
-        // Request with only the name (validation should fail)
-
-        // Act & Assert
         mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString("testUser")))
                 .andExpect(status().isBadRequest());
 
-        // Verify that createUser method was not called since validation failed
         verify(userService, times(0)).registerUser(any(AuthRequest.class));
     }
 }

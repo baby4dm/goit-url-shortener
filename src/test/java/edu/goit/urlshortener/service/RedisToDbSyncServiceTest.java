@@ -10,10 +10,19 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class RedisToDbSyncServiceTest {
 
@@ -31,21 +40,19 @@ class RedisToDbSyncServiceTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this); // Initializes mocks
-        when(redisTemplate.opsForValue()).thenReturn(valueOperations); // Mock ValueOperations behavior
+        MockitoAnnotations.openMocks(this);
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
     }
 
     @Test
     void testSynchronizeWithNonEmptyCache() {
-        // Arrange
-        // Mock Redis keys
         Set<String> cacheKeys = new HashSet<>(Arrays.asList(
                 "urlCache::abc123",
                 "urlCache::xyz456::clickCount"
         ));
         when(redisTemplate.keys("urlCache::*")).thenReturn(cacheKeys);
 
-        // Mock database response
+
         List<Url> dbUrls = new ArrayList<>();
         Url dbUrl = new Url();
         dbUrl.setShortLink("abc123");
@@ -54,61 +61,50 @@ class RedisToDbSyncServiceTest {
 
         when(urlRepository.findByShortLinkIn(anyList())).thenReturn(dbUrls);
 
-        // Mock Redis cached URL data
+
         Url cachedUrl = new Url();
         cachedUrl.setShortLink("abc123");
-        cachedUrl.setClickCount(15L);  // Simulate an updated click count
+        cachedUrl.setClickCount(15L);
         when(valueOperations.get("urlCache::abc123")).thenReturn(cachedUrl);
 
-        // Act
         redisToDbSyncService.synchronize();
 
-        // Assert
         verify(redisTemplate, times(1)).keys("urlCache::*");
         verify(urlRepository, times(1)).findByShortLinkIn(anyList());
         verify(urlRepository, times(1)).saveAll(dbUrls);
-        assertEquals(15L, dbUrl.getClickCount());  // Verify the click count has been updated
+        assertEquals(15L, dbUrl.getClickCount());
     }
 
     @Test
     void testSynchronizeWithEmptyCache() {
-        // Arrange
         when(redisTemplate.keys("urlCache::*")).thenReturn(Collections.emptySet());
 
-        // Act
         redisToDbSyncService.synchronize();
 
-        // Assert
         verify(redisTemplate, times(1)).keys("urlCache::*");
-        verify(urlRepository, times(0)).findByShortLinkIn(anyList());  // Should not query the database
-        verify(urlRepository, times(0)).saveAll(anyList());  // Should not save anything
+        verify(urlRepository, times(0)).findByShortLinkIn(anyList());
+        verify(urlRepository, times(0)).saveAll(anyList());
     }
 
     @Test
     void testSynchronizeWithNoKeysToUpdate() {
-        // Arrange
         Set<String> cacheKeys = new HashSet<>(Arrays.asList("urlCache::abc123", "urlCache::xyz456"));
         when(redisTemplate.keys("urlCache::*")).thenReturn(cacheKeys);
 
-        // Mock database response with no matching URLs
         when(urlRepository.findByShortLinkIn(anyList())).thenReturn(Collections.emptyList());
 
-        // Act
         redisToDbSyncService.synchronize();
 
-        // Assert
         verify(redisTemplate, times(1)).keys("urlCache::*");
         verify(urlRepository, times(1)).findByShortLinkIn(anyList());
-        verify(urlRepository, times(0)).saveAll(anyList());  // No save operation should be performed
+        verify(urlRepository, times(0)).saveAll(anyList());
     }
 
     @Test
     void testSynchronizeWithMatchingClickCounts() {
-        // Arrange
         Set<String> cacheKeys = new HashSet<>(Collections.singletonList("urlCache::abc123"));
         when(redisTemplate.keys("urlCache::*")).thenReturn(cacheKeys);
 
-        // Mock database and Redis responses with the same click count
         Url dbUrl = new Url();
         dbUrl.setShortLink("abc123");
         dbUrl.setClickCount(10L);
@@ -117,14 +113,12 @@ class RedisToDbSyncServiceTest {
 
         Url cachedUrl = new Url();
         cachedUrl.setShortLink("abc123");
-        cachedUrl.setClickCount(10L);  // Same click count as dbUrl
+        cachedUrl.setClickCount(10L);
 
         when(valueOperations.get("urlCache::abc123")).thenReturn(cachedUrl);
 
-        // Act
         redisToDbSyncService.synchronize();
 
-        // Assert
         verify(redisTemplate, times(1)).keys("urlCache::*");
         verify(urlRepository, times(1)).findByShortLinkIn(anyList());
     }

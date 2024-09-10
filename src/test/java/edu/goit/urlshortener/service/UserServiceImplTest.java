@@ -14,10 +14,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-public class UserServiceImplTest {
+
+class UserServiceImplTest {
     @Mock
     private UserRepository userRepository;
 
@@ -39,20 +45,15 @@ public class UserServiceImplTest {
 
     @Test
     void testCreateUserSuccess() {
-        // Arrange
         AuthRequest authRequest = new AuthRequest("newUser", "password123");
 
-        // Mocking repository and encoder behavior
         when(userRepository.existsByUsername("newUser")).thenReturn(false);  // Simulate that the user doesn't exist
         when(passwordEncoder.encode("password123")).thenReturn("hashedPassword");  // Simulate password encoding
 
-        // Act
         String result = userService.registerUser(authRequest);
 
-        // Assert
-        assertEquals("newUser", result);  // Assert that the username is returned
+        assertEquals("newUser", result);
 
-        // Verify that the save method was called with a user object
         verify(userRepository, times(1)).save(any(User.class));
 
     }
@@ -60,44 +61,35 @@ public class UserServiceImplTest {
     @Test
     @Transactional
     void testCreateUserAlreadyExists() {
-        // Arrange
         AuthRequest authRequest = new AuthRequest("existingUser", "password123");
 
-        // Mocking repository to simulate that the user already exists
         when(userRepository.existsByUsername("existingUser")).thenReturn(true);
 
-        // Act and Assert
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             userService.registerUser(authRequest);
         });
 
         assertEquals("User with username existingUser already exists", exception.getMessage());
 
-        // Verify that the save method was not called
         verify(userRepository, times(0)).save(any(User.class));
     }
 
     @Test
     void testFindByUsernameSuccess() {
-        // Arrange
         User mockUser = new User();
         mockUser.setUsername("testUser");
         when(userRepository.findByUsername("testUser")).thenReturn(Optional.of(mockUser));
 
-        // Act
         User user = userService.findByUsername("testUser");
 
-        // Assert
         assertNotNull(user);
         assertEquals("testUser", user.getUsername());
     }
 
     @Test
     void testFindByUsernameNotFound() {
-        // Arrange
         when(userRepository.findByUsername("testUser")).thenReturn(Optional.empty());
 
-        // Act & Assert
         assertThrows(RuntimeException.class, () -> userService.findByUsername("testUser"));
     }
 }

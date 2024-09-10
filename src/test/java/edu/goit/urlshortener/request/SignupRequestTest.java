@@ -33,7 +33,6 @@ class SignupRequestTest {
 
     @Test
     void testInvalidSignupRequest_MissingUsername() {
-
         Set<ConstraintViolation<AuthRequest>> violations = validator.validate(signupRequest);
         assertTrue(violations.isEmpty());
     }

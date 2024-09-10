@@ -2,9 +2,12 @@ package edu.goit.urlshortener.util;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 
-public class Base62EncoderTest {
+
+class Base62EncoderTest {
     private static final int SHORT_URL_LENGTH = 7;
 
     @Test
@@ -15,7 +18,6 @@ public class Base62EncoderTest {
 
     @Test
     void testEncodeWithLargerId() {
-        // Test encoding with a larger number
         long id = 123456789L;
         String encoded = Base62Encoder.encode(id);
         assertNotNull(encoded);
@@ -24,7 +26,6 @@ public class Base62EncoderTest {
 
     @Test
     void testEncodeWithPadding() {
-        // Test with a smaller id and ensure padding is added
         long id = 1L;
         String encoded = Base62Encoder.encode(id);
         assertEquals(SHORT_URL_LENGTH, encoded.length());
@@ -32,14 +33,12 @@ public class Base62EncoderTest {
 
     @Test
     void testEncodeWithZero() {
-        // Test the boundary condition where id = 0
         String encoded = Base62Encoder.encode(0L);
         assertEquals(SHORT_URL_LENGTH, encoded.length());
     }
 
     @Test
     void testEncodeUniqueForDifferentIds() {
-        // Ensure encoding different IDs results in different URLs
         String encoded1 = Base62Encoder.encode(123L);
         String encoded2 = Base62Encoder.encode(456L);
         assertNotEquals(encoded1, encoded2);

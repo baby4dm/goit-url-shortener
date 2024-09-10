@@ -1,5 +1,6 @@
 package edu.goit.urlshortener;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
@@ -15,4 +16,9 @@ class TestcontainersConfiguration {
         return new PostgreSQLContainer<>(DockerImageName.parse("postgres:latest"));
     }
 
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
+    }
 }
+
