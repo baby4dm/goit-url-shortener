@@ -1,0 +1,54 @@
+server:
+  port: 9999
+  host:
+    url: http://localhost:9999
+
+spring:
+  application:
+    name: url-shortener
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        default_batch_fetch_size: 10
+        order_updates: true
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+  cache:
+    type: redis
+
+springdoc:
+  host:
+    url: http://localhost:9999
+  writer-with-default-pretty-printer: true
+  show-login-endpoint: true
+  pre-loading-enabled: true
+  api-docs:
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    display-operation-id: true
+    doc-expansion: list
+    operations-sorter: method
+    syntax-highlight:
+      activated: true
+      theme: obsidian
+    groups-order: asc
+
+security:
+  jwt:
+    expiration-time: 86400000
+
+  user:
+    name: root
+    password: root

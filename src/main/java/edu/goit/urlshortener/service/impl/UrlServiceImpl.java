@@ -45,8 +45,9 @@ public class UrlServiceImpl implements UrlService {
 
         Url saved = urlRepository.save(url);
         String slugStr = Base62Encoder.encode(saved.getId());
-        saved.setShortLink(slugStr);
-        return "https://localhost:8080/" + slugStr;
+        String slugToSave = String.format("https://localhost:8080/%s", slugStr);
+        saved.setShortLink(slugToSave);
+        return slugToSave;
     }
 
     public String getDestinationLink(String shortLink) {
@@ -98,7 +99,7 @@ public class UrlServiceImpl implements UrlService {
                 .orElseThrow(() -> new EntityNotFoundException("Short link not found"));
         urlRepository.delete(url);
     }
-
+    @Override
     public Page<String> findAllLinks(int offset, int size) {
         User authUser = getUser();
 
@@ -108,6 +109,7 @@ public class UrlServiceImpl implements UrlService {
         return new PageImpl<>(list, pageable, list.size());
     }
 
+    @Override
     @Transactional
     public void extendExpirationDate(String shortLink) {
         User authUser = getUser();

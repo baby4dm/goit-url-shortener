@@ -2,8 +2,8 @@ package edu.goit.urlshortener.controller;
 
 import edu.goit.urlshortener.model.requests.LinkRequest;
 import edu.goit.urlshortener.model.responses.ShortLinkResponse;
+import edu.goit.urlshortener.security.model.UrlRequest;
 import edu.goit.urlshortener.service.UrlService;
-import edu.goit.urlshortener.service.impl.UrlServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,13 +14,13 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -36,17 +36,15 @@ public class ShortenerController {
                 .body(shortLink);
     }
 
-    @GetMapping("/{url}")
-    public ResponseEntity<Void> redirect(@PathVariable String url) {
-        String destinationLink = urlService.getDestinationLink(url);
-        return ResponseEntity.status(HttpStatus.FOUND)
-                .header("Location", destinationLink)
-                .build();
+    @PostMapping
+    public ResponseEntity<String> redirect(@RequestBody UrlRequest request) {
+        String destinationLink = urlService.getDestinationLink(request.url());
+        return new ResponseEntity<>(destinationLink, HttpStatus.OK);
     }
 
-    @GetMapping("/info/{url}")
-    public ResponseEntity<ShortLinkResponse> getShortLinkInfo(@PathVariable String url) {
-        ShortLinkResponse response = urlService.getShortLinkDto(url);
+    @PostMapping("/info")
+    public ResponseEntity<ShortLinkResponse> getShortLinkInfo(@RequestBody UrlRequest request) {
+        ShortLinkResponse response = urlService.getShortLinkDto(request.url());
         return ResponseEntity.ok(response);
     }
 
@@ -64,15 +62,15 @@ public class ShortenerController {
                 .body(allUrls);
     }
 
-    @PutMapping("/extend/{url}")
-    public ResponseEntity<Void> extendExpirationDate(@PathVariable String url) {
-        urlService.extendExpirationDate(url);
+    @PutMapping()
+    public ResponseEntity<Void> extendExpirationDate(@RequestBody UrlRequest request) {
+        urlService.extendExpirationDate(request.url());
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    @DeleteMapping("/{url}")
-    public ResponseEntity<Void> deleteShortLink(@PathVariable String url) {
-        urlService.deleteShortLink(url);
+    @DeleteMapping()
+    public ResponseEntity<Void> deleteShortLink(@RequestBody UrlRequest request) {
+        urlService.deleteShortLink(request.url());
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
