@@ -37,10 +37,10 @@ public class ShortenerController {
 
     @Operation(summary = "Redirect to original URL", description = "Redirects to the original URL for the given short link.")
     @ApiResponse(responseCode = "200", description = "Redirect successful")
-    @PostMapping
+    @GetMapping
     public ResponseEntity<String> redirect(
-            @Parameter(description = "Request object containing the short URL") @RequestBody UrlRequest request) {
-        String destinationLink = urlService.getDestinationLink(request.url());
+            @Parameter(description = "The short URL")String request) {
+        String destinationLink = urlService.getDestinationLink(request);
         return new ResponseEntity<>(destinationLink, HttpStatus.OK);
     }
 
@@ -48,8 +48,8 @@ public class ShortenerController {
     @ApiResponse(responseCode = "200", description = "Short link information retrieved successfully")
     @PostMapping("/info")
     public ResponseEntity<ShortLinkResponse> getShortLinkInfo(
-            @Parameter(description = "Request object containing the short URL") @RequestBody UrlRequest request) {
-        ShortLinkResponse response = urlService.getShortLinkDto(request.url());
+            @Parameter(description = "The short URL") String request) {
+        ShortLinkResponse response = urlService.getShortLinkDto(request);
         return ResponseEntity.ok(response);
     }
 
@@ -81,8 +81,8 @@ public class ShortenerController {
     @ApiResponse(responseCode = "200", description = "Expiration date extended successfully")
     @PutMapping
     public ResponseEntity<Void> extendExpirationDate(
-            @Parameter(description = "Request object containing the short URL") @RequestBody UrlRequest request) {
-        urlService.extendExpirationDate(request.url());
+            @Parameter(description = "The short URL")String request) {
+        urlService.extendExpirationDate(request);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
@@ -90,8 +90,8 @@ public class ShortenerController {
     @ApiResponse(responseCode = "204", description = "Short link deleted successfully")
     @DeleteMapping
     public ResponseEntity<Void> deleteShortLink(
-            @Parameter(description = "Request object containing the short URL") @RequestBody UrlRequest request) {
-        urlService.deleteShortLink(request.url());
+            @Parameter(description = "The short URL")String request) {
+        urlService.deleteShortLink(request);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

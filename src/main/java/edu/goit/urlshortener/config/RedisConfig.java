@@ -13,13 +13,12 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 public class RedisConfig {
-
+    private static final ObjectMapper objectMapper = new ObjectMapper();
     @Bean
     public RedisTemplate<String, Url> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String, Url> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory);
 
-        ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
