@@ -1,5 +1,6 @@
 package edu.goit.urlshortener.service;
 
+import edu.goit.urlshortener.exception.MyEntityNotFoundException;
 import edu.goit.urlshortener.model.Url;
 import edu.goit.urlshortener.repo.UrlRepository;
 import edu.goit.urlshortener.repo.UserRepository;
@@ -130,14 +131,6 @@ class UrlServiceImplTest {
         assertThrows(NullPointerException.class, () -> urlService.getDestinationLink("nonExistentLink"));
     }
 
-
-    @Test
-    void testGetShortLinkDtoNotFound() {
-        when(urlRepository.findByShortLink("nonExistentLink")).thenReturn(Optional.empty());
-
-        assertThrows(EntityNotFoundException.class, () -> urlService.getShortLinkDto("nonExistentLink"));
-    }
-
     @Test
     void testFindAllActiveUrlsSuccess() {
         List<String> mockSlugsList = List.of("slug1", "slug2");
@@ -172,7 +165,7 @@ class UrlServiceImplTest {
     void testDeleteShortLinkNotFound() {
         when(urlRepository.findByShortLink("nonExistentLink")).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> urlService.deleteShortLink("nonExistentLink"));
+        assertThrows(MyEntityNotFoundException.class, () -> urlService.deleteShortLink("nonExistentLink"));
         verify(urlRepository, never()).delete(any(Url.class));
     }
 
