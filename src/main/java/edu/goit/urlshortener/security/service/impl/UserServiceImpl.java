@@ -1,38 +1,36 @@
-package edu.goit.urlshortener.service.impl;
+package edu.goit.urlshortener.security.service.impl;
 
-import edu.goit.urlshortener.model.request.SignupRequest;
 import edu.goit.urlshortener.repo.UserRepository;
+import edu.goit.urlshortener.security.model.AuthRequest;
 import edu.goit.urlshortener.security.model.User;
-import edu.goit.urlshortener.service.UserService;
+import edu.goit.urlshortener.security.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-
-    @Autowired
     private final UserRepository userRepository;
 
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public User createUser(SignupRequest request) {
-        if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("User with username %s already exists".formatted(request.getUsername())); //TODO add exception
+    public String registerUser(AuthRequest request) {
+        if (userRepository.existsByUsername(request.username())) {
+            throw new IllegalArgumentException("User with username %s already exists".formatted(request.username()));
         }
         User user = new User();
-        user.setUsername(request.getUsername());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setUsername(request.username());
+        user.setPassword(passwordEncoder.encode(request.password()));
         userRepository.save(user);
 
-        return user;
+        return user.getUsername();
     }
 
     public User findByUsername(String username) {
         return userRepository.findByUsername(username).orElseThrow();
     }
 }
+

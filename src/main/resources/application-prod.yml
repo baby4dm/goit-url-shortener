@@ -1,0 +1,63 @@
+server:
+  port: ${PORT}
+  host:
+    url: http://localhost:8080
+
+spring:
+  application:
+    name: url-shortener
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        default_batch_fetch_size: 10
+        order_updates: true
+  flyway:
+    enabled: true
+    url: ${DB_URL}
+    user: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    schemas: public
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 1
+    clean-disabled: true
+    validate-on-migrate: true
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+  cache:
+    type: redis
+
+springdoc:
+  host:
+    url: http://localhost:8080
+  writer-with-default-pretty-printer: true
+  show-login-endpoint: true
+  pre-loading-enabled: true
+  api-docs:
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    display-operation-id: true
+    doc-expansion: list
+    operations-sorter: method
+    syntax-highlight:
+      activated: true
+      theme: obsidian
+    groups-order: asc
+
+security:
+  jwt:
+    expiration-time: 86400000
